@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeepSleep | 오늘의 나이트 루틴</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo">DeepSleep <span>대학생 나이트 루틴</span></a>
+    <nav>
+      <a href="index.html" class="active">오늘 루틴</a>
+      <a href="sleep-calc.html">수면 계산기</a>
+      <a href="situation.html">상황별 루틴</a>
+      <a href="record.html">주간 기록</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- 1. 시간표 연동 추천 취침 시간 요약 카드 -->
+    <section class="card sleep-summary">
+      <div>
+        <p style="font-size: 0.9rem; color: #94a3b8;">내일 첫 수업 기준 추천 취침 시간</p>
+        <p class="sleep-time" id="targetSleepTime">01:30 취침 권장 (07:30 기상)</p>
+      </div>
+      <a href="sleep-calc.html" class="btn" style="text-decoration: none;">시간표 설정 →</a>
+    </section>
+
+    <!-- 2. 매일 반복하는 데일리 수면 루틴 체크리스트 -->
+    <section class="card">
+      <h2>🌙 오늘의 데일리 나이트 루틴</h2>
+      <p style="font-size: 0.9rem; color: #94a3b8;">특별하지 않아도 매일 밤 꾸준히 지키는 기본 습관이에요.</p>
+
+      <div class="progress-wrap">
+        <div class="progress-info">
+          <span>오늘 루틴 달성률</span>
+          <span id="progressText">0% (0/5)</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <ul class="routine-list" id="routineList"></ul>
+
+      <div class="bottom-actions">
+        <span class="status-msg" id="saveMessage"></span>
+        <button class="btn" id="completeDayBtn">오늘 루틴 완료 기록하기</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const defaultRoutines = [
+      { id: 1, title: "내일 첫 강의 알람 & 시간표 확인하기", time: "2분", done: false },
+      { id: 2, title: "물 한 잔 천천히 마시기", time: "1분", done: false },
+      { id: 3, title: "방 형광등 끄고 간접 조명(무드등) 켜기", time: "1분", done: false },
+      { id: 4, title: "침대 밖 책상에 휴대폰 충전기 꽂아두기", time: "1분", done: false },
+      { id: 5, title: "목·어깨 가볍게 스트레칭하기", time: "5분", done: false }
+    ];
+
+    let routines = JSON.parse(localStorage.getItem("somnia_routines")) || defaultRoutines;
+
+    const routineListEl = document.getElementById("routineList");
+    const progressTextEl = document.getElementById("progressText");
+    const progressFillEl = document.getElementById("progressFill");
+    const saveMessageEl = document.getElementById("saveMessage");
+    const targetSleepTimeEl = document.getElementById("targetSleepTime");
+
+    const savedTargetTime = localStorage.getItem("somnia_target_sleep");
+    if (savedTargetTime) {
+      targetSleepTimeEl.textContent = savedTargetTime;
+    }
+
+    function renderRoutines() {
+      routineListEl.innerHTML = "";
+
+      routines.forEach((item) => {
+        const li = document.createElement("li");
+        li.className = `routine-item ${item.done ? "done" : ""}`;
+        li.innerHTML = `
+          <div class="routine-left">
+            <input type="checkbox" ${item.done ? "checked" : ""} />
+            <span>${item.title}</span>
+          </div>
+          <span class="badge">${item.time}</span>
+        `;
+
+        li.addEventListener("click", () => {
+          item.done = !item.done;
+          localStorage.setItem("somnia_routines", JSON.stringify(routines));
+          renderRoutines();
+        });
+
+        routineListEl.appendChild(li);
+      });
+
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const total = routines.length;
+      const completed = routines.filter((r) => r.done).length;
+      const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+      progressTextEl.textContent = `${percent}% (${completed}/${total})`;
+      progressFillEl.style.width = `${percent}%`;
+    }
+
+    document.getElementById("completeDayBtn").addEventListener("click", () => {
+      const total = routines.length;
+      const completed = routines.filter((r) => r.done).length;
+      const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+      const today = new Date().toISOString().slice(0, 10);
+      const records = JSON.parse(localStorage.getItem("somnia_records")) || {};
+      records[today] = percent;
+      localStorage.setItem("somnia_records", JSON.stringify(records));
+
+      saveMessageEl.textContent = `✓ ${today} 달성률(${percent}%)이 주간 기록에 저장되었어요!`;
+    });
+
+    renderRoutines();
+  </script>
+</body>
+</html>
