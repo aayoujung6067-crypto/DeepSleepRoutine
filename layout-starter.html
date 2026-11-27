@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="yellow">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeepSleep | 페이지 제목</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- 공통 상단 헤더 & 테마 변환기 -->
+  <header>
+    <a href="index.html" class="logo">DeepSleep <span>대학생 나이트 루틴</span></a>
+
+    <div class="header-right">
+      <nav>
+        <a href="index.html">오늘 루틴</a>
+        <a href="sleep-calc.html">수면 계산기</a>
+        <a href="situation.html">상황별 루틴</a>
+        <a href="record.html">주간 기록</a>
+      </nav>
+
+      <div class="theme-switcher" title="창 색상 변경">
+        <button class="theme-btn active" data-set-theme="yellow" aria-label="노랑 테마"></button>
+        <button class="theme-btn" data-set-theme="red" aria-label="빨강 테마"></button>
+        <button class="theme-btn" data-set-theme="navy" aria-label="남색 테마"></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 각 팀원이 자기 페이지 내용을 채울 영역 -->
+  <main class="container">
+    <section class="card">
+      <h2>페이지 제목</h2>
+      <p class="sub-desc">여기에 각 페이지 기능을 넣어줘.</p>
+    </section>
+  </main>
+
+  <!-- 전 페이지 테마 동기화 스크립트 -->
+  <script>
+    const themeBtns = document.querySelectorAll(".theme-btn");
+    const savedTheme = localStorage.getItem("deepsleep_theme") || "yellow";
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("deepsleep_theme", theme);
+      themeBtns.forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.setTheme === theme);
+      });
+    }
+
+    themeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => applyTheme(btn.dataset.setTheme));
+    });
+    applyTheme(savedTheme);
+  </script>
+</body>
+</html>
