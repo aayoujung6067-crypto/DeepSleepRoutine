@@ -1,36 +1,103 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="yellow">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DeepSleep | 오늘의 나이트 루틴</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .add-routine-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .add-routine-form input[type="text"] {
+      flex: 1;
+      min-width: 220px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background-color: var(--surface-sub);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.94rem;
+      outline: none;
+    }
+
+    .add-routine-form input[type="text"]:focus {
+      border-color: var(--accent);
+      background-color: var(--surface);
+    }
+
+    .add-routine-form select {
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background-color: var(--surface-sub);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.92rem;
+      cursor: pointer;
+    }
+
+    .routine-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--text-sub);
+      font-size: 0.95rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 50%;
+      transition: 0.15s;
+    }
+
+    .delete-btn:hover {
+      background-color: var(--border);
+      color: var(--text);
+    }
+  </style>
 </head>
 <body>
   <header>
     <a href="index.html" class="logo">DeepSleep <span>대학생 나이트 루틴</span></a>
-    <nav>
-      <a href="index.html" class="active">오늘 루틴</a>
-      <a href="sleep-calc.html">수면 계산기</a>
-      <a href="situation.html">상황별 루틴</a>
-      <a href="record.html">주간 기록</a>
-    </nav>
+
+    <div class="header-right">
+      <nav>
+        <a href="index.html" class="active">오늘 루틴</a>
+        <a href="sleep-calc.html">수면 계산기</a>
+        <a href="situation.html">상황별 루틴</a>
+        <a href="record.html">주간 기록</a>
+      </nav>
+
+      <!-- 노랑 / 빨강 / 남색 창 색 변환 -->
+      <div class="theme-switcher" title="창 색상 변경">
+        <button class="theme-btn active" data-set-theme="yellow" aria-label="노랑 테마"></button>
+        <button class="theme-btn" data-set-theme="red" aria-label="빨강 테마"></button>
+        <button class="theme-btn" data-set-theme="navy" aria-label="남색 테마"></button>
+      </div>
+    </div>
   </header>
 
   <main class="container">
-    <!-- 1. 시간표 연동 추천 취침 시간 요약 카드 -->
     <section class="card sleep-summary">
       <div>
-        <p style="font-size: 0.9rem; color: #94a3b8;">내일 첫 수업 기준 추천 취침 시간</p>
+        <p class="sub-desc">내일 첫 수업 기준 추천 취침 시간</p>
         <p class="sleep-time" id="targetSleepTime">01:30 취침 권장 (07:30 기상)</p>
       </div>
-      <a href="sleep-calc.html" class="btn" style="text-decoration: none;">시간표 설정 →</a>
+      <a href="sleep-calc.html" class="btn">시간표 설정 →</a>
     </section>
 
-    <!-- 2. 매일 반복하는 데일리 수면 루틴 체크리스트 -->
     <section class="card">
-      <h2>🌙 오늘의 데일리 나이트 루틴</h2>
-      <p style="font-size: 0.9rem; color: #94a3b8;">특별하지 않아도 매일 밤 꾸준히 지키는 기본 습관이에요.</p>
+      <h2>오늘의 데일리 나이트 루틴</h2>
+      <p class="sub-desc">매일 밤 편하게 실천할 수 있는 루틴을 추가하고 체크해 보세요.</p>
 
       <div class="progress-wrap">
         <div class="progress-info">
@@ -42,6 +109,18 @@
         </div>
       </div>
 
+      <form class="add-routine-form" id="addRoutineForm">
+        <input type="text" id="newRoutineInput" placeholder="새 루틴 입력 (예: 10분 스트레칭하기)" required />
+        <select id="newRoutineTime">
+          <option value="1분">1분</option>
+          <option value="3분">3분</option>
+          <option value="5분" selected>5분</option>
+          <option value="10분">10분</option>
+          <option value="15분">15분</option>
+        </select>
+        <button type="submit" class="btn">+ 추가</button>
+      </form>
+
       <ul class="routine-list" id="routineList"></ul>
 
       <div class="bottom-actions">
@@ -52,10 +131,26 @@
   </main>
 
   <script>
+    const themeBtns = document.querySelectorAll(".theme-btn");
+    const savedTheme = localStorage.getItem("deepsleep_theme") || "yellow";
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("deepsleep_theme", theme);
+      themeBtns.forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.setTheme === theme);
+      });
+    }
+
+    themeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => applyTheme(btn.dataset.setTheme));
+    });
+    applyTheme(savedTheme);
+
     const defaultRoutines = [
       { id: 1, title: "내일 첫 강의 알람 & 시간표 확인하기", time: "2분", done: false },
-      { id: 2, title: "물 한 잔 천천히 마시기", time: "1분", done: false },
-      { id: 3, title: "방 형광등 끄고 간접 조명(무드등) 켜기", time: "1분", done: false },
+      { id: 2, title: "따뜻한 물 한 잔 천천히 마시기", time: "1분", done: false },
+      { id: 3, title: "방 형광등 끄고 은은한 조명 켜기", time: "1분", done: false },
       { id: 4, title: "침대 밖 책상에 휴대폰 충전기 꽂아두기", time: "1분", done: false },
       { id: 5, title: "목·어깨 가볍게 스트레칭하기", time: "5분", done: false }
     ];
@@ -73,6 +168,10 @@
       targetSleepTimeEl.textContent = savedTargetTime;
     }
 
+    function saveRoutines() {
+      localStorage.setItem("somnia_routines", JSON.stringify(routines));
+    }
+
     function renderRoutines() {
       routineListEl.innerHTML = "";
 
@@ -84,12 +183,22 @@
             <input type="checkbox" ${item.done ? "checked" : ""} />
             <span>${item.title}</span>
           </div>
-          <span class="badge">${item.time}</span>
+          <div class="routine-right">
+            <span class="badge">${item.time}</span>
+            <button type="button" class="delete-btn" title="루틴 삭제">✕</button>
+          </div>
         `;
 
-        li.addEventListener("click", () => {
+        li.addEventListener("click", (e) => {
+          if (e.target.classList.contains("delete-btn")) return;
           item.done = !item.done;
-          localStorage.setItem("somnia_routines", JSON.stringify(routines));
+          saveRoutines();
+          renderRoutines();
+        });
+
+        li.querySelector(".delete-btn").addEventListener("click", () => {
+          routines = routines.filter((r) => r.id !== item.id);
+          saveRoutines();
           renderRoutines();
         });
 
@@ -98,6 +207,26 @@
 
       updateProgress();
     }
+
+    document.getElementById("addRoutineForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const inputEl = document.getElementById("newRoutineInput");
+      const timeEl = document.getElementById("newRoutineTime");
+      const title = inputEl.value.trim();
+
+      if (!title) return;
+
+      routines.push({
+        id: Date.now(),
+        title,
+        time: timeEl.value,
+        done: false
+      });
+
+      saveRoutines();
+      renderRoutines();
+      inputEl.value = "";
+    });
 
     function updateProgress() {
       const total = routines.length;
