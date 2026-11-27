@@ -36,22 +36,6 @@
   </main>
 
   <!-- 전 페이지 테마 동기화 스크립트 -->
-  <script>
-    const themeBtns = document.querySelectorAll(".theme-btn");
-    const savedTheme = localStorage.getItem("deepsleep_theme") || "yellow";
-
-    function applyTheme(theme) {
-      document.documentElement.setAttribute("data-theme", theme);
-      localStorage.setItem("deepsleep_theme", theme);
-      themeBtns.forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.setTheme === theme);
-      });
-    }
-
-    themeBtns.forEach((btn) => {
-      btn.addEventListener("click", () => applyTheme(btn.dataset.setTheme));
-    });
-    applyTheme(savedTheme);
-  </script>
+  <script src="script/theme.js"></script>
 </body>
 </html>
